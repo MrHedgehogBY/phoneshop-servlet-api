@@ -5,85 +5,64 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class ArrayListProductDao implements ProductDao {
 
     private List<Product> products;
     private long lastId;
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private ExtendedReadWriteLock lock = new ExtendedReadWriteLock();
+
 
     public ArrayListProductDao() {
-
         lastId = 0L;
         products = new ArrayList<>();
         saveSampleProducts();
     }
 
     @Override
-    public Product getProduct(Long id) throws NoSuchElementException {
-
-        lock.readLock().lock();
-        try {
-            return products.stream().filter(product -> product.getId().equals(id))
-                    .findAny()
-                    .orElseThrow(NoSuchElementException::new);
-        }
-        finally {
-            lock.readLock().unlock();
-        }
+    public Product getProduct(Long id) {
+        return lock.safeRead(() -> products.stream()
+                .filter(product -> product.getId().equals(id))
+                .findAny()
+                .orElseThrow(NoSuchElementException::new)
+        );
     }
 
     @Override
     public List<Product> findProducts() {
-
-        lock.readLock().lock();
-        try {
-            return products.stream()
-                    .filter(product -> product.getPrice() != null)
-                    .filter(product -> product.getStock() > 0)
-                    .collect(Collectors.toList());
-        }
-        finally {
-            lock.readLock().unlock();
-        }
+        return lock.safeRead(() -> products.stream()
+                .filter(product -> product.getPrice() != null)
+                .filter(product -> product.getStock() > 0)
+                .collect(Collectors.toList())
+        );
     }
 
     @Override
     public void save(Product product) {
-
-        lock.writeLock().lock();
-        try {
-            if (product.getId() != null) {
-                Product sameIdProduct = getProduct(product.getId());
-                products.remove(sameIdProduct);
-            }
-            else {
-                product.setId(lastId++);
-            }
-            products.add(product);
-        }
-        finally {
-            lock.writeLock().unlock();
-        }
+        lock.safeWrite(() -> {
+                    if (product.getId() != null) {
+                        Product sameIdProduct = getProduct(product.getId());
+                        products.remove(sameIdProduct);
+                    } else {
+                        product.setId(lastId++);
+                    }
+                    products.add(product);
+                }
+        );
     }
 
     @Override
     public void delete(Long id) {
+        lock.safeWrite(() -> products.remove(getProduct(id)));
+    }
 
-        lock.writeLock().lock();
-        try {
-            products.remove(getProduct(id));
-        }
-        finally {
-            lock.writeLock().unlock();
-        }
+    @Override
+    public void clear() {
+        lock.safeWrite(() -> products.clear());
     }
 
     private void saveSampleProducts() {
-
         Currency usd = Currency.getInstance("USD");
         save(new Product("sgs", "Samsung Galaxy S", new BigDecimal(100), usd, 100, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S.jpg"));
         save(new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), usd, 0, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg"));
