@@ -40,21 +40,22 @@ public class ArrayListProductDao implements ProductDao {
 
     @Override
     public void save(Product product) {
-        lock.safeWrite(() -> {
-                    if (product.getId() != null) {
-                        Product sameIdProduct = getProduct(product.getId());
+        lock.safeWrite((Product item) -> {
+                    if (item.getId() != null) {
+                        Product sameIdProduct = getProduct(item.getId());
                         products.remove(sameIdProduct);
                     } else {
-                        product.setId(lastId++);
+                        item.setId(lastId++);
                     }
-                    products.add(product);
-                }
+                    products.add(item);
+                },
+                product
         );
     }
 
     @Override
     public void delete(Long id) {
-        lock.safeWrite(() -> products.remove(getProduct(id)));
+        lock.safeWrite((Long tempId) -> products.remove(getProduct(tempId)), id);
     }
 
     @Override
