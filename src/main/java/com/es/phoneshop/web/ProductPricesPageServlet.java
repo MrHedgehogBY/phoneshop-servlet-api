@@ -1,7 +1,7 @@
 package com.es.phoneshop.web;
 
-import com.es.phoneshop.model.product.ArrayListProductDao;
-import com.es.phoneshop.model.product.ProductDao;
+import com.es.phoneshop.dao.ArrayListProductDao;
+import com.es.phoneshop.dao.ProductDao;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -26,12 +26,10 @@ public class ProductPricesPageServlet extends HttpServlet {
         String productId = request.getPathInfo().substring(1);
         try {
             request.setAttribute("product", productDao.getProduct(Long.valueOf(productId)));
-        }
-        catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             request.setAttribute("error", "Illegal product id, no such element");
             response.sendError(500);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             request.setAttribute("error", "Incorrect id format");
             response.sendError(500);
         }

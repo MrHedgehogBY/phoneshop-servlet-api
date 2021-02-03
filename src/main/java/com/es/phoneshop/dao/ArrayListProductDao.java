@@ -1,4 +1,11 @@
-package com.es.phoneshop.model.product;
+package com.es.phoneshop.dao;
+
+import com.es.phoneshop.model.comparator.SearchComparator;
+import com.es.phoneshop.model.comparator.SortingComparator;
+import com.es.phoneshop.model.product.*;
+import com.es.phoneshop.model.sortenum.SortField;
+import com.es.phoneshop.model.sortenum.SortOrder;
+import com.es.phoneshop.model.threadsafe.ExtendedReadWriteLock;
 
 import java.util.*;
 import java.util.stream.Collectors;
