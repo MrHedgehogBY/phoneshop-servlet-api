@@ -2,8 +2,6 @@ package com.es.phoneshop.web;
 
 import com.es.phoneshop.model.product.ArrayListProductDao;
 import com.es.phoneshop.model.product.ProductDao;
-import com.es.phoneshop.model.product.SortField;
-import com.es.phoneshop.model.product.SortOrder;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -11,10 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
-
-public class ProductListPageServlet extends HttpServlet {
+public class ProductDetailsPageServlet extends HttpServlet {
 
     private ProductDao productDao;
 
@@ -26,18 +23,19 @@ public class ProductListPageServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String search = request.getParameter("search");
-        String sortField = request.getParameter("sort");
-        String sortOrder = request.getParameter("order");
+        String productId = request.getPathInfo().substring(1);
         try {
-            request.setAttribute("products", productDao.findProducts(search,
-                    Optional.ofNullable(sortField).map(SortField::valueOf).orElse(null),
-                    Optional.ofNullable(sortOrder).map(SortOrder::valueOf).orElse(null)
-            ));
+            request.setAttribute("product", productDao.getProduct(Long.valueOf(productId)));
+        } catch (NoSuchElementException e) {
+            request.setAttribute("error", "Illegal product id, no such element");
+            response.sendError(404);
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Incorrect id format");
+            response.sendError(404);
         } catch (Exception e) {
             request.setAttribute("error", "Unexpected error");
             response.sendError(500);
         }
-        request.getRequestDispatcher("/WEB-INF/pages/productList.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/pages/productDetails.jsp").forward(request, response);
     }
 }

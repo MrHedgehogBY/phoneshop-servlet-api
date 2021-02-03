@@ -1,23 +1,27 @@
 package com.es.phoneshop.model.product;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ArrayListProductDao implements ProductDao {
+
+    private static ProductDao instance;
 
     private List<Product> products;
     private long lastId;
     private ExtendedReadWriteLock lock = new ExtendedReadWriteLock();
 
+    public static synchronized ProductDao getInstance() {
+        if (instance == null) {
+            instance = new ArrayListProductDao();
+        }
+        return instance;
+    }
 
-    public ArrayListProductDao() {
+    private ArrayListProductDao() {
         lastId = 0L;
         products = new ArrayList<>();
-        saveSampleProducts();
     }
 
     @Override
@@ -29,13 +33,32 @@ public class ArrayListProductDao implements ProductDao {
         );
     }
 
+    private boolean containsWord(Product product, List<String> wordsList) {
+        return wordsList.stream().anyMatch(word -> product.getDescription().contains(word));
+    }
+
     @Override
     public List<Product> findProducts() {
-        return lock.safeRead(() -> products.stream()
-                .filter(product -> product.getPrice() != null)
-                .filter(product -> product.getStock() > 0)
-                .collect(Collectors.toList())
-        );
+        return findProducts(null, null, null);
+    }
+
+    @Override
+    public List<Product> findProducts(String search, SortField sortField, SortOrder sortOrder) {
+        return lock.safeRead(() -> {
+            Stream<Product> productStream = products.stream()
+                    .filter(product -> search == null || search.isEmpty()
+                            || containsWord(product, Arrays.asList(search.split(" "))))
+                    .filter(product -> product.getPrice() != null)
+                    .filter(product -> product.getStock() > 0);
+            if (search != null) {
+                List<String> wordsList = Arrays.asList(search.split(" "));
+                productStream = productStream.sorted(new SearchComparator(wordsList).reversed());
+            }
+            if (sortField != null && sortOrder != null) {
+                productStream = productStream.sorted(new SortingComparator(sortField, sortOrder));
+            }
+            return productStream.collect(Collectors.toList());
+        });
     }
 
     @Override
@@ -60,23 +83,9 @@ public class ArrayListProductDao implements ProductDao {
 
     @Override
     public void clear() {
-        lock.safeWrite(() -> products.clear());
-    }
-
-    private void saveSampleProducts() {
-        Currency usd = Currency.getInstance("USD");
-        save(new Product("sgs", "Samsung Galaxy S", new BigDecimal(100), usd, 100, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S.jpg"));
-        save(new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), usd, 0, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg"));
-        save(new Product("sgs3", "Samsung Galaxy S III", new BigDecimal(300), usd, 5, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20III.jpg"));
-        save(new Product("iphone", "Apple iPhone", new BigDecimal(200), usd, 10, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Apple/Apple%20iPhone.jpg"));
-        save(new Product("iphone6", "Apple iPhone 6", new BigDecimal(1000), usd, 30, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Apple/Apple%20iPhone%206.jpg"));
-        save(new Product("htces4g", "HTC EVO Shift 4G", new BigDecimal(320), usd, 3, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/HTC/HTC%20EVO%20Shift%204G.jpg"));
-        save(new Product("sec901", "Sony Ericsson C901", new BigDecimal(420), usd, 30, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Sony/Sony%20Ericsson%20C901.jpg"));
-        save(new Product("xperiaxz", "Sony Xperia XZ", new BigDecimal(120), usd, 100, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Sony/Sony%20Xperia%20XZ.jpg"));
-        save(new Product("nokia3310", "Nokia 3310", new BigDecimal(70), usd, 100, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Nokia/Nokia%203310.jpg"));
-        save(new Product("palmp", "Palm Pixi", new BigDecimal(170), usd, 30, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Palm/Palm%20Pixi.jpg"));
-        save(new Product("simc56", "Siemens C56", new BigDecimal(70), usd, 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Siemens/Siemens%20C56.jpg"));
-        save(new Product("simc61", "Siemens C61", new BigDecimal(80), usd, 30, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Siemens/Siemens%20C61.jpg"));
-        save(new Product("simsxg75", "Siemens SXG75", new BigDecimal(150), usd, 40, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Siemens/Siemens%20SXG75.jpg"));
+        lock.safeWrite(() -> {
+            products.clear();
+            lastId = 0;
+        });
     }
 }
