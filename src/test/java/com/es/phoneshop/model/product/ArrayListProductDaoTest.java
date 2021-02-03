@@ -1,5 +1,9 @@
 package com.es.phoneshop.model.product;
 
+import com.es.phoneshop.dao.ArrayListProductDao;
+import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.model.sortenum.SortField;
+import com.es.phoneshop.model.sortenum.SortOrder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

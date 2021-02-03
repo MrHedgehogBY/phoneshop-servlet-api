@@ -10,7 +10,7 @@ public class ProductPrice {
     private BigDecimal price;
     private Currency currency;
 
-    public ProductPrice(Date date, BigDecimal price, Currency currency){
+    public ProductPrice(Date date, BigDecimal price, Currency currency) {
         this.date = date;
         this.price = price;
         this.currency = currency;

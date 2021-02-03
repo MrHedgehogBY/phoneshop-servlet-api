@@ -1,18 +1,19 @@
 package com.es.phoneshop.model.product;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class Product {
     private Long id;
     private String code;
     private String description;
-    /** null means there is no price because the product is outdated or new */
+    /**
+     * null means there is no price because the product is outdated or new
+     */
     private BigDecimal price;
-    /** can be null if the price is null */
+    /**
+     * can be null if the price is null
+     */
     private Currency currency;
     private int stock;
     private String imageUrl;
@@ -108,5 +109,26 @@ public class Product {
         this.price = price;
         this.currency = currency;
         this.prices.add(new ProductPrice(new Date(), price, currency));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+        Product product = (Product) o;
+        return getStock() == product.getStock() &&
+                getId().equals(product.getId()) &&
+                getCode().equals(product.getCode()) &&
+                getDescription().equals(product.getDescription()) &&
+                getPrice().equals(product.getPrice()) &&
+                getCurrency().equals(product.getCurrency()) &&
+                getImageUrl().equals(product.getImageUrl()) &&
+                getPrices().equals(product.getPrices());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getCode(), getDescription(),
+                getPrice(), getCurrency(), getStock(), getImageUrl(), getPrices());
     }
 }

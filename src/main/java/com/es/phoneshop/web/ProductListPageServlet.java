@@ -1,9 +1,9 @@
 package com.es.phoneshop.web;
 
-import com.es.phoneshop.model.product.ArrayListProductDao;
-import com.es.phoneshop.model.product.ProductDao;
-import com.es.phoneshop.model.product.SortField;
-import com.es.phoneshop.model.product.SortOrder;
+import com.es.phoneshop.dao.ArrayListProductDao;
+import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.model.sortenum.SortField;
+import com.es.phoneshop.model.sortenum.SortOrder;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -17,11 +17,13 @@ import java.util.Optional;
 public class ProductListPageServlet extends HttpServlet {
 
     private ProductDao productDao;
+    private ServiceGetter serviceGetter;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         productDao = ArrayListProductDao.getInstance();
+        serviceGetter = new ServiceGetter();
     }
 
     @Override
@@ -38,6 +40,8 @@ public class ProductListPageServlet extends HttpServlet {
             request.setAttribute("error", "Unexpected error");
             response.sendError(500);
         }
+        request.setAttribute("history",
+                serviceGetter.getRecentHistory(request).getRecentProducts());
         request.getRequestDispatcher("/WEB-INF/pages/productList.jsp").forward(request, response);
     }
 }

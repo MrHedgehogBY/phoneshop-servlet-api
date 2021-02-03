@@ -13,7 +13,11 @@
     <listener>
         <listener-class>com.es.phoneshop.web.ProductDemoDataServletContextListener</listener-class>
     </listener>
-    
+
+    <listener>
+        <listener-class>org.springframework.web.util.HttpSessionMutexListener</listener-class>
+    </listener>
+
     <servlet>
         <servlet-name>productList</servlet-name>
         <servlet-class>com.es.phoneshop.web.ProductListPageServlet</servlet-class>
