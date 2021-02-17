@@ -8,14 +8,14 @@ import java.util.Optional;
 public class DefaultRecentHistoryService implements RecentHistoryService {
 
     public static final String HISTORY_SESSION_ATTRIBUTE = DefaultRecentHistoryService.class + ".history";
-    private static DefaultRecentHistoryService instance;
     private int maxSize = 3;
 
-    public static DefaultRecentHistoryService getInstance() {
-        if (instance == null) {
-            instance = new DefaultRecentHistoryService();
-        }
-        return instance;
+    public static RecentHistoryService getInstance() {
+        return SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        private static final RecentHistoryService instance = new DefaultRecentHistoryService();
     }
 
     private DefaultRecentHistoryService() {
