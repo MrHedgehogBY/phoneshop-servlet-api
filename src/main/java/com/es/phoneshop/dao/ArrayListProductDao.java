@@ -2,28 +2,30 @@ package com.es.phoneshop.dao;
 
 import com.es.phoneshop.model.comparator.SearchComparator;
 import com.es.phoneshop.model.comparator.SortingComparator;
-import com.es.phoneshop.model.product.*;
+import com.es.phoneshop.model.product.Product;
 import com.es.phoneshop.model.sortenum.SortField;
 import com.es.phoneshop.model.sortenum.SortOrder;
 import com.es.phoneshop.model.threadsafe.ExtendedReadWriteLock;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ArrayListProductDao implements ProductDao {
 
-    private static ProductDao instance;
-
     private List<Product> products;
     private long lastId;
     private ExtendedReadWriteLock lock = new ExtendedReadWriteLock();
 
-    public static synchronized ProductDao getInstance() {
-        if (instance == null) {
-            instance = new ArrayListProductDao();
-        }
-        return instance;
+    public static ProductDao getInstance() {
+        return SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        private static final ProductDao instance = new ArrayListProductDao();
     }
 
     private ArrayListProductDao() {

@@ -1,30 +1,20 @@
 package com.es.phoneshop.web;
 
-import com.es.phoneshop.dao.ArrayListProductDao;
-import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.exception.OutOfStockException;
 import com.es.phoneshop.model.sortenum.SortField;
 import com.es.phoneshop.model.sortenum.SortOrder;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Optional;
 
 
-public class ProductListPageServlet extends HttpServlet {
+public class ProductListPageServlet extends AbstractServlet {
 
-    private ProductDao productDao;
-    private ServiceGetter serviceGetter;
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        productDao = ArrayListProductDao.getInstance();
-        serviceGetter = new ServiceGetter();
-    }
+    private String listPage = "/WEB-INF/pages/productList.jsp";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -40,8 +30,22 @@ public class ProductListPageServlet extends HttpServlet {
             request.setAttribute("error", "Unexpected error");
             response.sendError(500);
         }
-        request.setAttribute("history",
-                serviceGetter.getRecentHistory(request).getRecentProducts());
-        request.getRequestDispatcher("/WEB-INF/pages/productList.jsp").forward(request, response);
+        historyToPdpPage(request, response, listPage);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        long productId = Long.parseLong(request.getParameter("productId"));
+        try {
+            addItemToCart(request, productId);
+        } catch (OutOfStockException | ParseException e) {
+            String message = e.getClass() == OutOfStockException.class ? "Out of stock" : "Not a number";
+            request.setAttribute("error", message);
+            request.setAttribute("errorId", String.valueOf(productId));
+            doGet(request, response);
+            return;
+        }
+        response.sendRedirect(request.getContextPath()
+                + request.getServletPath() + "?message=Added to cart successfully");
     }
 }

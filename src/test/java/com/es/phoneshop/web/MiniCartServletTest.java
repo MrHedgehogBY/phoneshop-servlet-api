@@ -1,9 +1,5 @@
 package com.es.phoneshop.web;
 
-import com.es.phoneshop.dao.ArrayListProductDao;
-import com.es.phoneshop.dao.ProductDao;
-import com.es.phoneshop.model.product.Product;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,16 +11,15 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Currency;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProductPricesPageServletTest {
+public class MiniCartServletTest {
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -33,35 +28,27 @@ public class ProductPricesPageServletTest {
     private RequestDispatcher requestDispatcher;
     @Mock
     private ServletConfig config;
+    @Mock
+    private HttpSession session;
 
-    private ProductPricesPageServlet servlet = new ProductPricesPageServlet();
-    private ProductDao productDao = ArrayListProductDao.getInstance();
-    private Product testProduct = new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), Currency.getInstance("USD"), 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
-
+    private MiniCartServlet servlet = new MiniCartServlet();
 
     @Before
     public void setup() throws ServletException {
-        productDao.save(testProduct);
         servlet.init(config);
-        when(request.getPathInfo()).thenReturn("/" + testProduct.getId());
         when(request.getRequestDispatcher(anyString())).thenReturn(requestDispatcher);
-    }
-
-    @After
-    public void tearDown() {
-        productDao.clear();
+        when(request.getSession()).thenReturn(session);
     }
 
     @Test
     public void testDoGet() throws ServletException, IOException {
         servlet.doGet(request, response);
-        verify(requestDispatcher).forward(request, response);
+        verify(requestDispatcher).include(request, response);
     }
 
     @Test
     public void testDoGetCheckSetAttribute() throws ServletException, IOException {
         servlet.doGet(request, response);
-        verify(request).setAttribute(eq("product"), any());
+        verify(request).setAttribute(eq("cart"), any());
     }
-
 }

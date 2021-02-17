@@ -1,8 +1,8 @@
 package com.es.phoneshop.web;
 
 import com.es.phoneshop.dao.ArrayListProductDao;
-import com.es.phoneshop.model.product.Product;
 import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.model.product.Product;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,12 +10,16 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.*;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Currency;
+import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
@@ -31,6 +35,8 @@ public class ProductDetailsPageServletTest {
     private RequestDispatcher requestDispatcher;
     @Mock
     private ServletConfig config;
+    @Mock
+    private HttpSession session;
 
     private ProductDetailsPageServlet servlet = new ProductDetailsPageServlet();
     private ProductDao productDao = ArrayListProductDao.getInstance();
@@ -43,6 +49,7 @@ public class ProductDetailsPageServletTest {
         servlet.init(config);
         when(request.getPathInfo()).thenReturn("/" + testProduct.getId());
         when(request.getRequestDispatcher(anyString())).thenReturn(requestDispatcher);
+        when(request.getSession()).thenReturn(session);
     }
 
     @After
@@ -62,18 +69,16 @@ public class ProductDetailsPageServletTest {
         verify(request).setAttribute(eq("product"), any());
     }
 
-    @Test
-    public void testDoGetIncorrectId() throws ServletException, IOException{
+    @Test(expected = NumberFormatException.class)
+    public void testDoGetIncorrectId() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn("/" + testProduct.getCode());
         servlet.doGet(request, response);
-        verify(request).setAttribute(eq("error"), eq("Incorrect id format"));
     }
 
-    @Test
-    public void testDoGetIllegalId() throws ServletException, IOException{
+    @Test(expected = NoSuchElementException.class)
+    public void testDoGetIllegalId() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn("/" + testProduct.getStock());
         servlet.doGet(request, response);
-        verify(request).setAttribute(eq("error"), eq("Illegal product id, no such element"));
     }
 
 }

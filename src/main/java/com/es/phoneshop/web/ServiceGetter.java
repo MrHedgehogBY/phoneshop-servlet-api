@@ -10,6 +10,18 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ServiceGetter {
 
+    public static ServiceGetter getInstance() {
+        return SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        private static final ServiceGetter instance = new ServiceGetter();
+    }
+
+    private ServiceGetter() {
+
+    }
+
     public RecentHistory getRecentHistory(HttpServletRequest request) {
         RecentHistory recentHistory;
         Object mutex = WebUtils.getSessionMutex(request.getSession());

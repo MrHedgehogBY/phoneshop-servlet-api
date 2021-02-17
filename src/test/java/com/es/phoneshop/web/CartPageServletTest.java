@@ -2,6 +2,7 @@ package com.es.phoneshop.web;
 
 import com.es.phoneshop.dao.ArrayListProductDao;
 import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.exception.OutOfStockException;
 import com.es.phoneshop.model.cart.CartService;
 import com.es.phoneshop.model.cart.DefaultCartService;
 import com.es.phoneshop.model.product.Product;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProductListPageServletTest {
+public class CartPageServletTest {
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -40,13 +41,16 @@ public class ProductListPageServletTest {
     @Mock
     private HttpSession session;
 
-    private ProductListPageServlet servlet = new ProductListPageServlet();
+
+    private CartPageServlet servlet = new CartPageServlet();
     private ProductDao productDao;
     private CartService cartService;
     private ServiceGetter serviceGetter;
     private Locale locale;
     private Product testProduct = new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), Currency.getInstance("USD"), 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
 
+    public CartPageServletTest() {
+    }
 
     @Before
     public void setup() throws ServletException {
@@ -73,34 +77,33 @@ public class ProductListPageServletTest {
     @Test
     public void testDoGetCheckSetAttribute() throws ServletException, IOException {
         servlet.doGet(request, response);
-        verify(request).setAttribute(eq("products"), any());
+        verify(request).setAttribute(eq("cart"), any());
     }
 
     @Test
-    public void testDoPost() throws ServletException, IOException {
+    public void testDoPost() throws IOException, ServletException, OutOfStockException {
         productDao.save(testProduct);
-        when(request.getParameter("productId")).thenReturn(testProduct.getId().toString());
-        when(request.getParameter("quantity")).thenReturn("5");
+        cartService.add(serviceGetter.getCart(request), testProduct, 1);
+        when(request.getParameterValues("productId")).thenReturn(new String[]{testProduct.getId().toString()});
+        when(request.getParameterValues("quantity")).thenReturn(new String[]{"5"});
         when(request.getLocale()).thenReturn(locale);
         servlet.doPost(request, response);
         verify(response).sendRedirect(anyString());
     }
 
-    @Test
-    public void testDoPostParseException() throws ServletException, IOException {
-        productDao.save(testProduct);
-        when(request.getParameter("productId")).thenReturn(testProduct.getId().toString());
-        when(request.getParameter("quantity")).thenReturn("e");
-        when(request.getLocale()).thenReturn(locale);
+    @Test(expected = NumberFormatException.class)
+    public void testDoPostIncorrectId() throws ServletException, IOException {
+        when(request.getParameterValues("productId")).thenReturn(new String[]{"e"});
+        when(request.getParameterValues("quantity")).thenReturn(new String[]{"1"});
         servlet.doPost(request, response);
-        verify(requestDispatcher).forward(request, response);
     }
 
     @Test
-    public void testDoPostOutOfStock() throws ServletException, IOException {
+    public void testDoPostParseException() throws OutOfStockException, ServletException, IOException {
         productDao.save(testProduct);
-        when(request.getParameter("productId")).thenReturn(testProduct.getId().toString());
-        when(request.getParameter("quantity")).thenReturn("50000");
+        cartService.add(serviceGetter.getCart(request), testProduct, 1);
+        when(request.getParameterValues("productId")).thenReturn(new String[]{testProduct.getId().toString()});
+        when(request.getParameterValues("quantity")).thenReturn(new String[]{"e"});
         when(request.getLocale()).thenReturn(locale);
         servlet.doPost(request, response);
         verify(requestDispatcher).forward(request, response);

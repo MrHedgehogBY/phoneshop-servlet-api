@@ -21,7 +21,7 @@
                 An unexpected error during adding to cart
         </div>
     </c:if>
-    <form method="post">
+    <form method="post" action="${pageContext.servletContext.contextPath}/products/${product.id}">
         <table>
             <tr>
                 <td>image</td>
