@@ -3,20 +3,19 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
+<jsp:useBean id="cart" type="com.es.phoneshop.model.cart.Cart" scope="request"/>
 <tags:master pageTitle="Cart">
     <p>
         Cart: ${cart}
     </p>
-    <c:if test="${not empty param.message}">
-        <div class="success">
-                ${param.message}
-        </div>
-    </c:if>
-    <c:if test="${not empty errors}">
+    <c:if test="${not empty param.errorMessage}">
         <div class="error">
-            An unexpected error during updating the cart
+                ${param.errorMessage}
         </div>
     </c:if>
+    <tags:upperMessage message="${param.message}" messageErrors="An unexpected error during updating the cart"
+                       errors="${errors}"> </tags:upperMessage>
+    <br>
     <form method="post" action="${pageContext.servletContext.contextPath}/cart">
         <table>
             <thead>
@@ -91,5 +90,10 @@
                 Update cart
             </button>
         </p>
+    </form>
+    <form action="${pageContext.servletContext.contextPath}/checkout">
+        <button>
+            Checkout
+        </button>
     </form>
 </tags:master>

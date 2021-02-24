@@ -66,7 +66,7 @@ public abstract class AbstractServlet extends HttpServlet {
 
     protected void addItemToCart(HttpServletRequest request, long productId) throws ParseException, OutOfStockException {
         int quantity = quantityParser(request, request.getParameter("quantity"));
-        cartService.add(serviceGetter.getCart(request), productDao.getProduct(productId), quantity);
+        cartService.add(serviceGetter.getCart(request), productDao.get(productId), quantity);
     }
 
 }

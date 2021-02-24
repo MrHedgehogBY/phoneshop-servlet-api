@@ -1,11 +1,13 @@
 package com.es.phoneshop.model.product;
 
+import com.es.phoneshop.dao.IdentifiableItem;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class Product implements Serializable {
-    private Long id;
+public class Product extends IdentifiableItem implements Serializable {
+
     private String code;
     private String description;
     /**
@@ -44,14 +46,6 @@ public class Product implements Serializable {
         this.imageUrl = imageUrl;
         this.prices = new ArrayList<>();
         this.prices.add(new ProductPrice(new Date(), price, currency));
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getCode() {

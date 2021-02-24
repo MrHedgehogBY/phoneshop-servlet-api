@@ -3,6 +3,7 @@ package com.es.phoneshop.web;
 import com.es.phoneshop.dao.ArrayListProductDao;
 import com.es.phoneshop.dao.ProductDao;
 import com.es.phoneshop.exception.OutOfStockException;
+import com.es.phoneshop.model.cart.Cart;
 import com.es.phoneshop.model.cart.CartService;
 import com.es.phoneshop.model.cart.DefaultCartService;
 import com.es.phoneshop.model.product.Product;
@@ -46,6 +47,7 @@ public class CartPageServletTest {
     private ProductDao productDao;
     private CartService cartService;
     private ServiceGetter serviceGetter;
+    private Cart cart;
     private Locale locale;
     private Product testProduct = new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), Currency.getInstance("USD"), 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
 
@@ -61,6 +63,7 @@ public class CartPageServletTest {
         locale = new Locale("russian");
         when(request.getRequestDispatcher(anyString())).thenReturn(requestDispatcher);
         when(request.getSession()).thenReturn(session);
+        cart = serviceGetter.getCart(request);
     }
 
     @After
@@ -83,6 +86,7 @@ public class CartPageServletTest {
     @Test
     public void testDoPost() throws IOException, ServletException, OutOfStockException {
         productDao.save(testProduct);
+        when(request.getSession().getAttribute(anyString())).thenReturn(cart);
         cartService.add(serviceGetter.getCart(request), testProduct, 1);
         when(request.getParameterValues("productId")).thenReturn(new String[]{testProduct.getId().toString()});
         when(request.getParameterValues("quantity")).thenReturn(new String[]{"5"});
@@ -92,7 +96,10 @@ public class CartPageServletTest {
     }
 
     @Test(expected = NumberFormatException.class)
-    public void testDoPostIncorrectId() throws ServletException, IOException {
+    public void testDoPostIncorrectId() throws ServletException, IOException, OutOfStockException {
+        productDao.save(testProduct);
+        when(request.getSession().getAttribute(anyString())).thenReturn(cart);
+        cartService.add(serviceGetter.getCart(request), testProduct, 1);
         when(request.getParameterValues("productId")).thenReturn(new String[]{"e"});
         when(request.getParameterValues("quantity")).thenReturn(new String[]{"1"});
         servlet.doPost(request, response);
@@ -101,6 +108,7 @@ public class CartPageServletTest {
     @Test
     public void testDoPostParseException() throws OutOfStockException, ServletException, IOException {
         productDao.save(testProduct);
+        when(request.getSession().getAttribute(anyString())).thenReturn(cart);
         cartService.add(serviceGetter.getCart(request), testProduct, 1);
         when(request.getParameterValues("productId")).thenReturn(new String[]{testProduct.getId().toString()});
         when(request.getParameterValues("quantity")).thenReturn(new String[]{"e"});

@@ -12,7 +12,7 @@ public class CartItemDeleteServlet extends AbstractServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long productIdToDelete = parseProductById(request);
         handlingGetProduct(request, response, () -> {
-            Product product = productDao.getProduct(productIdToDelete);
+            Product product = productDao.get(productIdToDelete);
             cartService.delete(serviceGetter.getCart(request), product);
         });
         response.sendRedirect(request.getContextPath() + "/cart"

@@ -10,7 +10,7 @@ public class ProductPricesPageServlet extends AbstractServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         handlingGetProduct(request, response,
-                () -> request.setAttribute("product", productDao.getProduct(parseProductById(request))));
+                () -> request.setAttribute("product", productDao.get(parseProductById(request))));
         request.getRequestDispatcher("/WEB-INF/pages/productPrices.jsp").forward(request, response);
     }
 }
