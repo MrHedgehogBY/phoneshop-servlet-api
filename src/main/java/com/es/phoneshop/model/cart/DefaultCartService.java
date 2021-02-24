@@ -43,6 +43,7 @@ public class DefaultCartService implements CartService {
         if (item.isPresent()) {
             if (quantity <= product.getStock()) {
                 item.get().setQuantity(quantity);
+                recalculatePriceOfQuantity(item.get());
             } else {
                 throw new OutOfStockException(product, quantity, product.getStock());
             }
@@ -56,6 +57,12 @@ public class DefaultCartService implements CartService {
                 .filter(item -> product.getId().equals(item.getProduct().getId()))
                 .findAny();
         itemToDelete.ifPresent(cartItem -> cart.getCartItems().remove(cartItem));
+        countQuantityAndCost(cart);
+    }
+
+    @Override
+    public void clear(Cart cart) {
+        cart.getCartItems().clear();
         countQuantityAndCost(cart);
     }
 
@@ -75,6 +82,7 @@ public class DefaultCartService implements CartService {
         int itemQuantity = item.getQuantity();
         if (itemQuantity + quantity <= product.getStock()) {
             item.setQuantity(itemQuantity + quantity);
+            recalculatePriceOfQuantity(item);
         } else {
             throw new OutOfStockException(product, quantity, product.getStock());
         }
@@ -86,5 +94,9 @@ public class DefaultCartService implements CartService {
         } else {
             throw new OutOfStockException(product, quantity, product.getStock());
         }
+    }
+
+    private void recalculatePriceOfQuantity(CartItem item) {
+        item.setPriceForQuantity(item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
     }
 }

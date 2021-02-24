@@ -41,6 +41,9 @@ img.product-tile {
   float: left;
   margin-right: 10px;
 }
+.validating-fields {
+  color: red;
+}
 /* Page specific styles */
 body.product-list {
 

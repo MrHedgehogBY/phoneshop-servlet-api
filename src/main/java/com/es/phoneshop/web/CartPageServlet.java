@@ -23,12 +23,16 @@ public class CartPageServlet extends AbstractServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Cart cart = serviceGetter.getCart(request);
+        if (cart.getCartItems().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/cart?errorMessage=Cart is empty");
+            return;
+        }
         String[] productIds = request.getParameterValues("productId");
         String[] quantities = request.getParameterValues("quantity");
-        Cart cart = serviceGetter.getCart(request);
         Map<Long, String> errors = new HashMap<>();
         for (int i = 0; i < productIds.length; i++) {
-            Product product = productDao.getProduct(Long.parseLong(productIds[i]));
+            Product product = productDao.get(Long.parseLong(productIds[i]));
             try {
                 cartService.update(cart, product, quantityParser(request, quantities[i]));
             } catch (ParseException | OutOfStockException e) {

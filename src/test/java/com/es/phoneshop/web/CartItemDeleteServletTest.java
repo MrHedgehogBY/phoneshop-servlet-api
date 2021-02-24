@@ -68,7 +68,7 @@ public class CartItemDeleteServletTest {
     @Test
     public void testDoPostDelete() throws OutOfStockException, IOException {
         productDao.save(testProduct);
-        cartService.add(serviceGetter.getCart(request), productDao.getProduct(0L), 1);
+        cartService.add(serviceGetter.getCart(request), productDao.get(0L), 1);
         servlet.doPost(request, response);
         assertTrue(serviceGetter.getCart(request).getCartItems().isEmpty());
     }

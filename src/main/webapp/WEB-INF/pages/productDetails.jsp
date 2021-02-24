@@ -11,16 +11,9 @@
     <p>
         Cart: ${cart}
     </p>
-    <c:if test="${not empty param.message}">
-        <div class="success">
-                ${param.message}
-        </div>
-    </c:if>
-    <c:if test="${not empty error}">
-        <div class="error">
-                An unexpected error during adding to cart
-        </div>
-    </c:if>
+    <tags:upperMessageSingleError messageError="An unexpected error during adding to cart" message="${param.message}"
+                                  error="${error}"> </tags:upperMessageSingleError>
+    <br>
     <form method="post" action="${pageContext.servletContext.contextPath}/products/${product.id}">
         <table>
             <tr>
@@ -44,7 +37,8 @@
             <tr>
                 <td>price</td>
                 <td class="price">
-                    <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="${product.currency.symbol}"/>
+                    <fmt:formatNumber value="${product.price}" type="currency"
+                                      currencySymbol="${product.currency.symbol}"/>
                 </td>
             </tr>
             <tr>
@@ -53,7 +47,7 @@
                     <input class="quantity" name="quantity" value="${not empty error ? param.quantity : 1}"/>
                     <c:if test="${not empty error}">
                         <div class="error">
-                            ${error}
+                                ${error}
                         </div>
                     </c:if>
                 </td>

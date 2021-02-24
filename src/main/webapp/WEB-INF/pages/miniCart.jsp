@@ -4,5 +4,7 @@
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
 <jsp:useBean id="cart" type="com.es.phoneshop.model.cart.Cart" scope="request"/>
-Cart: <fmt:formatNumber value="${cart.totalQuantity}"/> items for
-<fmt:formatNumber value="${cart.totalCost}" type="currency" currencySymbol="${cart.cartItems[0].product.currency.symbol}"/>
+<a href="${pageContext.servletContext.contextPath}/cart">Cart:</a>
+<fmt:formatNumber value="${cart.totalQuantity}"/> items for
+<fmt:formatNumber value="${cart.totalCost}" type="currency"
+                  currencySymbol="${cart.cartItems[0].product.currency.symbol}"/>

@@ -15,12 +15,12 @@ import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
-public class ArrayListProductDaoTest
-{
+public class ArrayListProductDaoTest {
+
     private ProductDao productDao = ArrayListProductDao.getInstance();
     private Currency usd = Currency.getInstance("USD");
 
-    private Product updatedProduct = new Product(1L,"sgs2", "Samsung Galaxy S II", new BigDecimal(200), usd, 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
+    private Product updatedProduct = new Product(1L, "sgs2", "Samsung Galaxy S II", new BigDecimal(200), usd, 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
     private Product newProduct = new Product("test-product", "Samsung Galaxy S II", new BigDecimal(500), usd, 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
     private Product zeroStockProduct = new Product("sgs2", "Samsung Galaxy S II", new BigDecimal(200), usd, 0, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
     private Product nullPriceProduct = new Product("sgs2", "Samsung Galaxy S II", null, usd, 20, "https://raw.githubusercontent.com/andrewosipenko/phoneshop-ext-images/master/manufacturer/Samsung/Samsung%20Galaxy%20S%20II.jpg");
@@ -45,19 +45,19 @@ public class ArrayListProductDaoTest
     @Test(expected = NoSuchElementException.class)
     public void testDeleteProduct() {
         productDao.delete(1L);
-        productDao.getProduct(1L);
+        productDao.get(1L);
     }
 
     @Test
     public void testSaveNewProduct() {
         productDao.save(newProduct);
-        Product result = productDao.getProduct(newProduct.getId());
+        Product result = productDao.get(newProduct.getId());
         assertEquals(newProduct.getCode(), result.getCode());
     }
 
     @Test
     public void testSaveExistingProduct() {
-        Product existingProduct = productDao.getProduct(updatedProduct.getId());
+        Product existingProduct = productDao.get(updatedProduct.getId());
         productDao.save(updatedProduct);
         assertNotEquals(existingProduct.getStock(), updatedProduct.getStock());
     }

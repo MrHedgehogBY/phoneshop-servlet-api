@@ -26,7 +26,7 @@ public class ProductDetailsPageServlet extends AbstractServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         handlingGetProduct(request, response, () -> setProductAttributes(request));
         historyService.add(serviceGetter.getRecentHistory(request),
-                productDao.getProduct(parseProductById(request)));
+                productDao.get(parseProductById(request)));
         historyToPdpPage(request, response, detailsPage);
     }
 
@@ -47,7 +47,7 @@ public class ProductDetailsPageServlet extends AbstractServlet {
     }
 
     private void setProductAttributes(HttpServletRequest request) {
-        request.setAttribute("product", productDao.getProduct(parseProductById(request)));
+        request.setAttribute("product", productDao.get(parseProductById(request)));
         request.setAttribute("cart", serviceGetter.getCart(request));
     }
 }
