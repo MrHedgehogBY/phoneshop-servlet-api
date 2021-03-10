@@ -5,7 +5,9 @@ import com.es.phoneshop.model.comparator.SortingComparator;
 import com.es.phoneshop.model.product.Product;
 import com.es.phoneshop.model.sortenum.SortField;
 import com.es.phoneshop.model.sortenum.SortOrder;
+import com.es.phoneshop.search.SearchMethod;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +31,10 @@ public class ArrayListProductDao extends AbstractDao<Product> implements Product
         return wordsList.stream().anyMatch(word -> product.getDescription().contains(word));
     }
 
+    private boolean containsAllWords(Product product, List<String> wordsList) {
+        return wordsList.stream().allMatch(word -> product.getDescription().contains(word));
+    }
+
     @Override
     public List<Product> findProducts() {
         return findProducts(null, null, null);
@@ -50,6 +56,30 @@ public class ArrayListProductDao extends AbstractDao<Product> implements Product
                 productStream = productStream.sorted(new SortingComparator(sortField, sortOrder));
             }
             return productStream.collect(Collectors.toList());
+        });
+    }
+
+    public List<Product> advancedSearch(String search, String searchMethod, BigDecimal minPrice, BigDecimal maxPrice) {
+        return lock.safeRead(() -> {
+            if (SearchMethod.valueOf(searchMethod) == SearchMethod.ANY_WORD) {
+                Stream<Product> productStream = items.stream()
+                        .filter(product -> search == null || search.isEmpty()
+                                || containsWord(product, Arrays.asList(search.split(" "))))
+                        .filter(product -> product.getPrice() != null)
+                        .filter(product -> product.getPrice().compareTo(minPrice) >= 0 &&
+                                product.getPrice().compareTo(maxPrice) <= 0)
+                        .filter(product -> product.getStock() > 0);
+                return productStream.collect(Collectors.toList());
+            } else {
+                Stream<Product> productStream = items.stream()
+                        .filter(product -> search == null || search.isEmpty()
+                                || containsAllWords(product, Arrays.asList(search.split(" "))))
+                        .filter(product -> product.getPrice() != null)
+                        .filter(product -> product.getPrice().compareTo(minPrice) >= 0 &&
+                                product.getPrice().compareTo(maxPrice) <= 0)
+                        .filter(product -> product.getStock() > 0);
+                return productStream.collect(Collectors.toList());
+            }
         });
     }
 
